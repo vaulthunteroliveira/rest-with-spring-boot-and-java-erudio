@@ -12,7 +12,7 @@ import java.io.Serializable;
 @Getter
 @Setter
 @Builder
-@ToString
+//@ToString
 @EqualsAndHashCode(of = "key")
 @AllArgsConstructor
 @NoArgsConstructor

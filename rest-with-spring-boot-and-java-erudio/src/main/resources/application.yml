@@ -16,6 +16,13 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQL94Dialect
 #      show-sql: true
 #spring.jpa.database-platform = org.hibernate.dialect.PostgreSQL94Dialect
+swagger:
+  urlExample: https://github.com/vaulthunteroliveira/rest-with-spring-boot-and-java-erudio
+
+spring-doc:
+  pathToMatch: /api/**/v1/**
+  swagger-ui:
+    use-root-path: true
 
 
 

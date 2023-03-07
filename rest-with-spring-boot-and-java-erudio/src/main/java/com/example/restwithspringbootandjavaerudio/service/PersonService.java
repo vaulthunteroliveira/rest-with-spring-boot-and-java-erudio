@@ -33,19 +33,37 @@ public class PersonService {
         return personVO;
     }
 
-    public Page<Person> findAll(Pageable pageable) {
-        log.info(String.format("find a list of persons %s", UUID.randomUUID()));
+//    public Page<Person> findAll(Pageable pageable) {
+//        log.info(String.format("find a list of persons %s", UUID.randomUUID()));
 //        return DozerMapper.parseListObjects(personRepository.findAll(), PersonVO.class);
-        return personRepository.findAll(pageable);
+//        return personRepository.findAll(pageable);
+//    }
+
+    public List<PersonVO> findAll() {
+        log.info(String.format("find a list of persons %s", UUID.randomUUID()));
+        List<PersonVO> persons = DozerMapper.parseListObjects(personRepository.findAll(), PersonVO.class);
+
+        persons.forEach(p -> {
+            try {
+                p.add(linkTo(methodOn(PersonController.class).findById(p.getKey())).withSelfRel());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
+        return persons;
     }
 
-    public PersonVO create(PersonVO person) {
+
+    public PersonVO create(PersonVO person) throws Exception {
         log.info("create one person!");
         Person entity = personRepository.save(DozerMapper.parseObject(person, Person.class));
-        return DozerMapper.parseObject(entity, PersonVO.class);
+        PersonVO personVO = DozerMapper.parseObject(entity, PersonVO.class);
+        personVO.add(linkTo(methodOn(PersonController.class).findById(personVO.getKey())).withSelfRel());
+        return personVO;
     }
 
-    public PersonVO update(PersonVO person) {
+    public PersonVO update(PersonVO person) throws Exception {
         log.info("updating one person!");
 
         Person personDB = personRepository.findById(person.getKey()).orElseThrow(() -> new ResourceNotFoundException("No recordes are found for this id!"));;
@@ -56,7 +74,9 @@ public class PersonService {
         personDB.setGender(person.getGender());
         personDB.setArrombado(person.isArrombado());
 
-        return DozerMapper.parseObject(personRepository.save(personDB), PersonVO.class);
+        PersonVO personVO = DozerMapper.parseObject(personRepository.save(personDB), PersonVO.class);
+        personVO.add(linkTo(methodOn(PersonController.class).findById(personVO.getKey())).withSelfRel());
+        return personVO;
     }
 
     public void delete(Long id) throws Exception {
