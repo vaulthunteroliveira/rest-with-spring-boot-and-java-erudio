@@ -12,4 +12,5 @@ import org.springframework.context.annotation.Configuration;
 public class ConfigProperties {
 
     private String urlExample;
+    private String summary;
 }

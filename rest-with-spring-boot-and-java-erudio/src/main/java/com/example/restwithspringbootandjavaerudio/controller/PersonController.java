@@ -1,8 +1,14 @@
 package com.example.restwithspringbootandjavaerudio.controller;
 
+import com.example.restwithspringbootandjavaerudio.config.ConfigProperties;
 import com.example.restwithspringbootandjavaerudio.data.vo.v1.PersonVO;
 import com.example.restwithspringbootandjavaerudio.model.Person;
 import com.example.restwithspringbootandjavaerudio.service.PersonService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -21,6 +27,9 @@ public class PersonController {
     @Autowired
     private PersonService personService;
 
+    @Autowired
+    private ConfigProperties configProperties;
+
     @RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, "application/x-yaml"})
     public PersonVO findById(@PathVariable Long id) throws Exception {
         return personService.findById(id);
@@ -32,6 +41,18 @@ public class PersonController {
 //    }
 
     @RequestMapping(method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, "application/x-yaml"})
+    @Operation(summary = "it finds all people", description = "it finds all people", tags = {"People"}, responses = {
+            @ApiResponse(description = "success", responseCode = "200", content = {
+                    @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = PersonVO.class))
+                    )
+            }),
+            @ApiResponse(description = "Bad request", responseCode = "400", content = @Content),
+            @ApiResponse(description = "Unauthorized", responseCode = "401", content = @Content),
+            @ApiResponse(description = "Not found", responseCode = "404", content = @Content),
+            @ApiResponse(description = "Internal Error", responseCode = "500", content = @Content),
+    })
     public List<PersonVO> findAll() {
         return personService.findAll();
     }

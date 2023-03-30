@@ -2,6 +2,7 @@ package com.example.restwithspringbootandjavaerudio.service;
 
 import com.example.restwithspringbootandjavaerudio.controller.PersonController;
 import com.example.restwithspringbootandjavaerudio.data.vo.v1.PersonVO;
+import com.example.restwithspringbootandjavaerudio.exceptions.RequireObjectIsNullException;
 import com.example.restwithspringbootandjavaerudio.exceptions.ResourceNotFoundException;
 import com.example.restwithspringbootandjavaerudio.mapper.DozerMapper;
 import com.example.restwithspringbootandjavaerudio.model.Person;
@@ -20,7 +21,7 @@ import java.util.logging.Logger;
 @Service
 public class PersonService {
 
-    private Logger log = Logger.getLogger(PersonService.class.getName());
+    private final Logger log = Logger.getLogger(PersonService.class.getName());
 
     @Autowired
     private PersonRepository personRepository;
@@ -56,6 +57,9 @@ public class PersonService {
 
 
     public PersonVO create(PersonVO person) throws Exception {
+
+        if (person == null) throw new RequireObjectIsNullException();
+
         log.info("create one person!");
         Person entity = personRepository.save(DozerMapper.parseObject(person, Person.class));
         PersonVO personVO = DozerMapper.parseObject(entity, PersonVO.class);
@@ -64,6 +68,9 @@ public class PersonService {
     }
 
     public PersonVO update(PersonVO person) throws Exception {
+
+        if (person == null) throw new RequireObjectIsNullException();
+
         log.info("updating one person!");
 
         Person personDB = personRepository.findById(person.getKey()).orElseThrow(() -> new ResourceNotFoundException("No recordes are found for this id!"));;
