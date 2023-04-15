@@ -22,6 +22,9 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQL94Dialect
 #      show-sql: true
 #spring.jpa.database-platform = org.hibernate.dialect.PostgreSQL94Dialect
+  flyway:
+    baseline-on-migrate: true
+
 swagger:
   urlExample: https://github.com/vaulthunteroliveira/rest-with-spring-boot-and-java-erudio
   summary: Finds all people

@@ -99,7 +99,6 @@ public class JwtTokenProvider {
         return null;
     }
 
-
     public boolean validateToken(String token){
         DecodedJWT decodedJWT = decodedToken(token);
         try {
@@ -112,5 +111,13 @@ public class JwtTokenProvider {
         }
     }
 
+    public TokenResponse refreshToken(String refreshToken){
+        if (refreshToken.contains("Bearer ")) refreshToken = refreshToken.substring(7);
 
+        JWTVerifier verifier = JWT.require(algorithm).build();
+        DecodedJWT decodedJWT = verifier.verify(refreshToken);
+
+        return createAccessToken(decodedJWT.getSubject(),
+                decodedJWT.getClaim("roles").asList(String.class));
+    }
 }
