@@ -10,6 +10,9 @@ import com.example.restwithspringbootandjavaerudio.repositories.PersonRepository
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Service;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -26,12 +29,14 @@ public class PersonService {
     @Autowired
     private PersonRepository personRepository;
 
+    @Autowired
+    private PagedResourcesAssembler<PersonVO> assembler;
+
     public PersonVO findById(Long id) throws Exception {
         log.info(String.format("finding one person with id %s...", id));
         Person entity = personRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("No recordes are found for this id!"));
         PersonVO personVO = DozerMapper.parseObject(entity, PersonVO.class);
-        personVO.add(linkTo(methodOn(PersonController.class).findById(id)).withSelfRel());
-        return personVO;
+        return addHateosToPersonVoList(personVO);
     }
 
 //    public Page<Person> findAll(Pageable pageable) {
@@ -40,19 +45,39 @@ public class PersonService {
 //        return personRepository.findAll(pageable);
 //    }
 
-    public List<PersonVO> findAll() {
-        log.info(String.format("find a list of persons %s", UUID.randomUUID()));
-        List<PersonVO> persons = DozerMapper.parseListObjects(personRepository.findAll(), PersonVO.class);
+    public PagedModel<EntityModel<PersonVO>> findAll(Pageable pageable) {
 
-        persons.forEach(p -> {
-            try {
-                p.add(linkTo(methodOn(PersonController.class).findById(p.getKey())).withSelfRel());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
+        var personPageList = personRepository.findAll(pageable);
 
-        return persons;
+        var personPageVoList = personPageList.map(p -> DozerMapper.parseObject(p, PersonVO.class));
+
+        personPageVoList.map(this::addHateosToPersonVoList);
+
+        return assembler.toModel(personPageVoList,
+                linkTo(methodOn(PersonController.class).findAll(pageable.getPageNumber(),
+                        pageable.getPageSize(), "asc")).withSelfRel());
+    }
+
+    public PagedModel<EntityModel<PersonVO>> findPersonByName(String firstname, Pageable pageable) {
+
+        var personPageList = personRepository.findPersonByName(firstname, pageable);
+
+        var personPageVoList = personPageList.map(p -> DozerMapper.parseObject(p, PersonVO.class));
+
+        personPageVoList.map(this::addHateosToPersonVoList);
+
+        return assembler.toModel(personPageVoList,
+                linkTo(methodOn(PersonController.class).findAll(pageable.getPageNumber(),
+                        pageable.getPageSize(), "asc")).withSelfRel());
+    }
+
+    public PersonVO addHateosToPersonVoList(PersonVO personVO){
+        try {
+            return personVO.add(linkTo(methodOn(PersonController.class).findById(personVO.getKey())).withSelfRel());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return personVO;
     }
 
 
@@ -63,8 +88,7 @@ public class PersonService {
         log.info("create one person!");
         Person entity = personRepository.save(DozerMapper.parseObject(person, Person.class));
         PersonVO personVO = DozerMapper.parseObject(entity, PersonVO.class);
-        personVO.add(linkTo(methodOn(PersonController.class).findById(personVO.getKey())).withSelfRel());
-        return personVO;
+        return addHateosToPersonVoList(personVO);
     }
 
     public PersonVO update(PersonVO person) throws Exception {
@@ -82,8 +106,7 @@ public class PersonService {
         personDB.setArrombado(person.isArrombado());
 
         PersonVO personVO = DozerMapper.parseObject(personRepository.save(personDB), PersonVO.class);
-        personVO.add(linkTo(methodOn(PersonController.class).findById(personVO.getKey())).withSelfRel());
-        return personVO;
+        return addHateosToPersonVoList(personVO);
     }
 
     public void delete(Long id) throws Exception {
