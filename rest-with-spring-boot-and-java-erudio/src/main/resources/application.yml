@@ -3,7 +3,8 @@ security:
     token:
       secret-key: 53cr37
       expire-length: 3600000
-
+file:
+  upload-dir: /Users/alexo/Desktop/projetos intellij/upload-dir
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
@@ -20,6 +21,12 @@ spring:
           lob:
             non_contextual_creation: true
     database-platform: org.hibernate.dialect.PostgreSQL94Dialect
+  servlet:
+    multipart:
+      enabled: true
+      file-size-threshold: 2KB
+      max-file-size: 200MB
+      max-request-size: 215MB
 #      show-sql: true
 #spring.jpa.database-platform = org.hibernate.dialect.PostgreSQL94Dialect
   flyway:
